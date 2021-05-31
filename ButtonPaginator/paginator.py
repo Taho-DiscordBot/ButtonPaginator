@@ -64,12 +64,12 @@ class Paginator:
         ):
             pass
         else:
-            raise TypeError("This is not a discord.py related bot class.(only <discord.Client, <discord.AutoShardedClient>, <discord.ext.commands.Bot>, <discord.ext.commands.AutoShardedBot>)")
+            raise TypeError(
+                "This is not a discord.py related bot class.(only <discord.Client, <discord.AutoShardedClient>, <discord.ext.commands.Bot>, <discord.ext.commands.AutoShardedBot>)"
+            )
 
         if contents is None and embeds is None:
-            raise MissingAttributeException(
-                "Both contents and embeds are None."
-            )
+            raise MissingAttributeException("Both contents and embeds are None.")
 
         if not isinstance(timeout, int):
             raise TypeError("timeout must be int.")
@@ -94,12 +94,24 @@ class Paginator:
                 )
             self.extended_emojis = extended_buttons
 
-        if (
-            isinstance(left_button_style, ButtonStyle.URL)
-            or isinstance(right_button_style, ButtonStyle.URL)
+        if isinstance(left_button_style, ButtonStyle.URL) or isinstance(
+            right_button_style, ButtonStyle.URL
         ):
-            raise TypeError("Can't use <discord_component.ButtonStyle.URL> type for button style.")
+            raise TypeError(
+                "Can't use <discord_component.ButtonStyle.URL> type for button style."
+            )
 
+    def button_check(self, payload: Context) -> bool:
+        if payload.user.id == self.bot.user.id:
+            return False
 
+        if payload.message.id != self.context.message.id:
+            return False
 
+        if self.only is not None:
+            if payload.user.id != self.only.id:
+                return False
 
+        if not self.component.id.endswith("_click"):
+            return False
+        return True
