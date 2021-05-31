@@ -13,6 +13,8 @@ from discord_components import (
 
 from .errors import MissingAttributeException, InvaildArgumentException
 
+Emoji = List[Union[discord.Emoji, discord.Reaction, discord.PartialEmoji, str]]
+
 
 class Paginator:
     def __init__(
@@ -29,8 +31,8 @@ class Paginator:
         timeout: int = 30,
         use_extend: bool = False,
         only: Optional[discord.abc.User] = None,
-        basic_buttons: Optional[List[str]] = None,
-        extended_buttons: Optional[List[str]] = None,
+        basic_buttons: Optional[Emoji] = None,
+        extended_buttons: Optional[Emoji] = None,
         left_button_style: ButtonStyle = None,
         right_button_style: ButtonStyle = None,
         auto_delete: bool = False,
@@ -129,4 +131,6 @@ class Paginator:
         else:
             right_disable = False
             left_disable = False
+
+
 
