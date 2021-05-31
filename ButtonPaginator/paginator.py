@@ -2,6 +2,7 @@ import discord
 from discord import InvalidArgument, PartialEmoji, Emoji
 from discord.ext import commands
 
+import asyncio
 from typing import List, Optional, Union
 
 from discord_components import (
@@ -246,6 +247,51 @@ class Paginator:
         if not self.component.id.endswith("_click"):
             return False
         return True
+
+    async def start(self) -> None:
+        if self.contents is None:
+            await self.context.send(
+                embed=self.embeds[self.page - 1],
+                components=(await self.create_button()),
+            )
+        else:
+            await self.context.send(
+                content=self.contents[self.page - 1],
+                components=(await self.create_button()),
+            )
+        while True:
+            try:
+                _task = asyncio.ensure_future(self.bot.wait_for("button_click"))
+                done, pending = await asyncio.wait(
+                    [_task], return_when=asyncio.FIRST_COMPLETED, timeout=self.timeout
+                )
+                for i in pending:
+                    i.cancel()
+
+                if len(done) == 0:
+                    raise asyncio.TimeoutError
+
+                payload = done.pop().result()
+                await self.handle_paginaion(payload=payload)
+
+            except asyncio.TimeoutError:
+                pass
+
+    async def handle_paginaion(self, payload: Context):
+        if self.use_extend:
+            if payload.component.id == "_extend_left_click":
+                await self.go_first()
+            elif payload.component.id == "_left_click":
+                await self.go_previous()
+            elif payload.component.id == "_right_click":
+                await self.go_next()
+            elif payload.component.id == "_extend_right_click":
+                await self.go_last()
+        else:
+            if payload.component.id == "_left_click":
+                await self.go_previous()
+            elif payload.component.id == "_right_click":
+                await self.go_next()
 
     async def disable_check(self) -> None:
         if self.page == 1 and (len(self.embeds)) == 1:
