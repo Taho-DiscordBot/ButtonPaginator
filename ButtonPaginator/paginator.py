@@ -46,7 +46,7 @@ class Paginator:
         self.use_extend = use_extend
         self.only = only
         self.basic_buttons = ["⬅️", "➡️"]
-        self.extened_buttons = ["⏪", "⏩"]
+        self.extended_buttons = ["⏪", "⏩"]
         self.left_button_style = left_button_style
         self.right_button_style = right_button_style
         self.auto_delete = auto_delete
@@ -84,86 +84,68 @@ class Paginator:
         if not isinstance(timeout, int):
             raise TypeError("timeout must be int.")
 
-        if basic_buttons is not None:
-            if self.use_extend:
-                raise InvaildArgumentException("use_extend should be False.")
-
-            if len(set(self.basic_emojis)) != 2:
-                raise InvaildArgumentException(
-                    "There should be 2 elements in basic_emojis."
-                )
-            self.basic_emojis = basic_buttons
-            if isinstance(self.basic_emojis[0], Emoji):
-                self._left_button = PartialEmoji(
-                    name=self.basic_emojis[0].name,
-                    animated=self.basic_emojis[0].animated,
-                    id=self.basic_emojis[0].id,
-                )
-            elif isinstance(self.basic_emojis[0], PartialEmoji):
-                self._left_button = self.basic_emojis[0]
-            elif isinstance(self.basic_emojis[0], str):
-                self._left_button = PartialEmoji(self.basic_emojis[0])
-            else:
-                self._left_label = str(self.basic_emojis[0])
-
-            if isinstance(self.basic_emojis[1], Emoji):
-                self._right_button = PartialEmoji(
-                    name=self.basic_emojis[1].name,
-                    animated=self.basic_emojis[1].animated,
-                    id=self.basic_emojis[1].id,
-                )
-            elif isinstance(self.basic_emojis[1], PartialEmoji):
-                self._right_button = self.basic_emojis[0]
-            elif isinstance(self.basic_emojis[1], str):
-                self._right_button = PartialEmoji(self.basic_emojis[1])
-            else:
-                self._right_label = str(self.basic_emojis[1])
-
+        if len(set(self.basic_buttons)) != 2:
+            raise InvaildArgumentException(
+                    "There should be 2 elements in basic_buttons."
+            )
+            self.basic_buttons = basic_buttons
+        if isinstance(self.basic_buttons[0], Emoji):
+            self._left_button = PartialEmoji(
+                name=self.basic_buttons[0].name,
+                animated=self.basic_buttons[0].animated,
+                id=self.basic_buttons[0].id,
+            )
+        elif isinstance(self.basic_buttons[0], PartialEmoji):
+            self._left_button = self.basic_buttons[0]
+        else:
+            self._left_label = str(self.basic_buttons[0])
+        if isinstance(self.basic_buttons[1], Emoji):
+            self._right_button = PartialEmoji(
+                name=self.basic_buttons[1].name,
+                animated=self.basic_buttons[1].animated,
+                id=self.basic_buttons[1].id,
+            )
+        elif isinstance(self.basic_buttons[1], PartialEmoji):
+            self._right_button = self.basic_buttons[0]
+        else:
+            self._right_label = str(self.basic_buttons[1])
         if extended_buttons is not None:
             if not self.use_extend:
                 raise InvaildArgumentException("use_extend should be True.")
 
-            if len(set(self.extended_emojis)) != 2:
+            if len(set(self.extended_buttons)) != 2:
                 raise InvaildArgumentException(
-                    "There should be 2 elements in extended_emojis"
+                    "There should be 2 elements in extended_buttons"
                 )
-            self.extended_emojis = extended_buttons
+            self.extended_buttons = extended_buttons
 
-            if isinstance(self.extended_emojis[0], Emoji):
+            if isinstance(self.extended_buttons[0], Emoji):
                 self._left2_button = PartialEmoji(
-                    name=self.extended_emojis[0].name,
-                    animated=self.extended_emojis[0].animated,
-                    id=self.extended_emojis[0].id,
+                    name=self.extended_buttons[0].name,
+                    animated=self.extended_buttons[0].animated,
+                    id=self.extended_buttons[0].id,
                 )
-            elif isinstance(self.extended_emojis[0], PartialEmoji):
-                self._left2_button = self.extended_emojis[0]
-            elif isinstance(self.extended_emojis[0], str):
-                self._left2_button = PartialEmoji(self.extended_emojis[0])
+            elif isinstance(self.extended_buttons[0], PartialEmoji):
+                self._left2_button = self.extended_buttons[0]
             else:
-                self._left2_label = str(self.extended_emojis[0])
-
-            if isinstance(self.extended_emojis[1], Emoji):
+                self._left2_label = str(self.extended_buttons[0])
+            if isinstance(self.extended_buttons[1], Emoji):
                 self._right2_button = PartialEmoji(
-                    name=self.extended_emojis[1].name,
-                    animated=self.extended_emojis[1].animated,
-                    id=self.extended_emojis[1].id,
+                    name=self.extended_buttons[1].name,
+                    animated=self.extended_buttons[1].animated,
+                    id=self.extended_buttons[1].id,
                 )
-            elif isinstance(self.extended_emojis[1], PartialEmoji):
-                self._right2_button = self.extended_emojis[0]
-            elif isinstance(self.extended_emojis[1], str):
-                self._right2_button = PartialEmoji(self.extended_emojis[1])
+            elif isinstance(self.extended_buttons[1], PartialEmoji):
+                self._right2_button = self.extended_buttons[0]
             else:
-                self._right2_label = str(self.extended_emojis[1])
-
-        if isinstance(left_button_style, ButtonStyle.URL) or isinstance(
-            right_button_style, ButtonStyle.URL
-        ):
+                self._right2_label = str(self.extended_buttons[1])
+        if left_button_style == ButtonStyle.URL or right_button_style == ButtonStyle.URL:
             raise TypeError(
                 "Can't use <discord_component.ButtonStyle.URL> type for button style."
             )
 
     async def go_previous(self, payload: Context) -> None:
-        if self.page == 0:
+        if self.page == 1:
             return
         self.page -= 1
         if self.contents is None:
@@ -180,7 +162,7 @@ class Paginator:
             )
 
     async def go_next(self, payload: Context) -> None:
-        if self.embeds is None:
+        if self.embeds is not None:
             if self.page != len(self.embeds):
                 self.page += 1
                 await payload.respond(
@@ -198,7 +180,7 @@ class Paginator:
                     )
 
     async def go_first(self, payload: Context) -> None:
-        if self.page == 0:
+        if self.page == 1:
             return
         self.page = 1
 
@@ -217,16 +199,16 @@ class Paginator:
 
     async def go_last(self, payload: Context) -> None:
         if self.embeds is not None:
-            if self.page != len(self.embeds) - 1:
-                self.page = len(self.embeds) - 1
+            if self.page != len(self.embeds):
+                self.page = len(self.embeds)
                 await payload.respond(
                     type=InteractionType.UpdateMessage,
                     embed=self.embeds[self.page - 1],
                     components=(await self.create_button()),
                 )
         elif self.contents is not None:
-            if self.page != len(self.contents) - 1:
-                self.page = len(self.contents) - 1
+            if self.page != len(self.contents):
+                self.page = len(self.contents)
                 await payload.respond(
                     type=InteractionType.UpdateMessage,
                     content=self.contents[self.page - 1],
@@ -280,18 +262,18 @@ class Paginator:
     async def handle_paginaion(self, payload: Context):
         if self.use_extend:
             if payload.component.id == "_extend_left_click":
-                await self.go_first()
+                await self.go_first(payload=payload)
             elif payload.component.id == "_left_click":
-                await self.go_previous()
+                await self.go_previous(payload=payload)
             elif payload.component.id == "_right_click":
-                await self.go_next()
+                await self.go_next(payload=payload)
             elif payload.component.id == "_extend_right_click":
-                await self.go_last()
+                await self.go_last(payload=payload)
         else:
             if payload.component.id == "_left_click":
-                await self.go_previous()
+                await self.go_previous(payload=payload)
             elif payload.component.id == "_right_click":
-                await self.go_next()
+                await self.go_next(payload=payload)
 
     async def disable_check(self) -> None:
         if self.page == 1 and (len(self.embeds)) == 1:
@@ -316,13 +298,15 @@ class Paginator:
                 [
                     Button(
                         style=self.left_button_style,
-                        label=self._left2_button,
+                        label=self._left2_label,
+                        emoji=self._left2_button,
                         id="_extend_left_click",
                         disabled=left_disable,
                     ),
                     Button(
                         style=self.left_button_style,
-                        label=self._left_button,
+                        label=self._left_label,
+                        emoji=self._left_button,
                         id="_left_click",
                         disabled=left_disable,
                     ),
@@ -335,12 +319,14 @@ class Paginator:
                     Button(
                         style=self.right_button_style,
                         label=self._right_label,
+                        emoji=self._right_button,
                         id="_right_click",
                         disabled=right_disable,
                     ),
                     Button(
                         style=self.right_button_style,
                         label=self._right2_label,
+                        emoji=self._right_button,
                         id="_extend_right_click",
                         disabled=right_disable,
                     ),
