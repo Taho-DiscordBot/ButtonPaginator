@@ -39,10 +39,30 @@ class Paginator:
         self.timeout = timeout
         self.use_extend = use_extend
         self.only = only
-        self.basic_buttons: basic_buttons
-        self.extened_buttons = extended_buttons
+        self.basic_buttons = ["⬅️", "➡️"]
+        self.extened_buttons = ["⏪", "⬅️", "➡️", "⏩"]
         self.left_button_style = left_button_style
         self.right_button_style = right_button_style
         self.auto_delete = auto_delete
         self.page = 1
-        pass
+
+        if (
+                isinstance(bot, discord.Client)
+                or isinstance(bot, discord.AutoShardedClient)
+                or isinstance(bot, commands.Bot)
+                or isinstance(bot, commands.AutoShardedBot)
+        ):
+            pass
+        elif (
+                issubclass(bot, discord.Client)
+                or issubclass(bot, discord.AutoShardedClient)
+                or issubclass(bot, commands.Bot)
+                or issubclass(bot, commands.AutoShardedBot)
+        ):
+            pass
+        else:
+            raise TypeError("This is not a discord.py related bot class.(only <discord.Client, <discord.AutoShardedClient>, <discord.ext.commands.Bot>, <discord.ext.commands.AutoShardedBot>)")
+
+
+
+
