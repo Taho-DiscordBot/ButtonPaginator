@@ -167,7 +167,7 @@ class Paginator:
             return False
         return True
 
-    async def disable_check(self) -> list:
+    async def disable_check(self) -> None:
         if self.page == 1 and (len(self.embeds)) == 1:
             right_disable = True
             left_disable = True
@@ -180,3 +180,4 @@ class Paginator:
         else:
             right_disable = False
             left_disable = False
+        return right_disable
