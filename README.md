@@ -59,5 +59,5 @@ But you have to follow these to PR.
 + Test.
 
 ## Thanks to
-+ [khk4912](https://github.com/khk4912/EZPaginator) - Original Paginator
++ [khk4912](https://github.com/khk4912/EZPaginator) - Original Paginator developer
 + [kiki7000](https://github.com/kiki7000/discord.py-components) - componets lib developer
