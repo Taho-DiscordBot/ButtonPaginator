@@ -115,3 +115,18 @@ class Paginator:
         if not self.component.id.endswith("_click"):
             return False
         return True
+
+    async def disable_check(self) -> list:
+        if self.page == 1 and (len(self.embeds)) == 1:
+            right_disable = True
+            left_disable = True
+        elif self.page == 1 and not (len(self.embeds)) == 1:
+            right_disable = False
+            left_disable = True
+        elif self.page == (len(self.embeds)):
+            right_disable = True
+            left_disable = False
+        else:
+            right_disable = False
+            left_disable = False
+
