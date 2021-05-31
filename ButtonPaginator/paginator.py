@@ -196,6 +196,42 @@ class Paginator:
                         components=(await self.create_button()),
                     )
 
+    async def go_first(self, payload: Context) -> None:
+        if self.page == 0:
+            return
+        self.page = 1
+
+        if self.contents is None:
+            await payload.respond(
+                type=InteractionType.UpdateMessage,
+                embed=self.embeds[self.page - 1],
+                components=(await self.create_button()),
+            )
+        else:
+            await payload.respond(
+                type=InteractionType.UpdateMessage,
+                content=self.contents[self.page - 1],
+                components=(await self.create_button()),
+            )
+
+    async def go_last(self, payload: Context) -> None:
+        if self.embeds is not None:
+            if self.page != len(self.embeds) - 1:
+                self.page = len(self.embeds) - 1
+                await payload.respond(
+                    type=InteractionType.UpdateMessage,
+                    embed=self.embeds[self.page - 1],
+                    components=(await self.create_button()),
+                )
+        elif self.contents is not None:
+            if self.page != len(self.contents) - 1:
+                self.page = len(self.contents) - 1
+                await payload.respond(
+                    type=InteractionType.UpdateMessage,
+                    content=self.contents[self.page - 1],
+                    components=(await self.create_button()),
+                )
+
     def button_check(self, payload: Context) -> bool:
         if payload.user.id == self.bot.user.id:
             return False
