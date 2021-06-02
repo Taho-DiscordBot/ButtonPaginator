@@ -27,26 +27,28 @@ class Paginator:
             commands.AutoShardedBot,
         ],
         ctx: Context,
+        lang_page: str,
         contents: Optional[List[str]] = None,
         embeds: Optional[List[discord.Embed]] = None,
         timeout: int = 30,
         use_extend: bool = False,
         only: Optional[discord.abc.User] = None,
-        basic_buttons: Optional[EmojiType] = None,
-        extended_buttons: Optional[EmojiType] = None,
+        basic_buttons: Optional[EmojiType] = ["⬅️", "➡️"],
+        extended_buttons: Optional[EmojiType] = ["⏪", "⏩"],
         left_button_style: ButtonStyle = ButtonStyle.green,
         right_button_style: ButtonStyle = ButtonStyle.green,
         auto_delete: bool = False,
     ) -> None:
         self.bot = bot
+        self.lang_page = lang_page
         self.context = ctx
         self.contents = contents
         self.embeds = embeds
         self.timeout = timeout
         self.use_extend = use_extend
         self.only = only
-        self.basic_buttons = ["⬅️", "➡️"]
-        self.extended_buttons = ["⏪", "⏩"]
+        self.basic_buttons = basic_buttons
+        self.extended_buttons = extended_buttons
         self.left_button_style = left_button_style
         self.right_button_style = right_button_style
         self.auto_delete = auto_delete
@@ -55,10 +57,6 @@ class Paginator:
         self._right_button = None
         self._left2_button = None
         self._right2_button = None
-        self._left_label = str()
-        self._right_label = str()
-        self._left2_label = str()
-        self._right2_label = str()
         if (
             isinstance(bot, discord.Client)
             or isinstance(bot, discord.AutoShardedClient)
@@ -84,62 +82,57 @@ class Paginator:
         if not isinstance(timeout, int):
             raise TypeError("timeout must be int.")
 
-        if len(set(self.basic_buttons)) != 2:
+        self.basic_buttons = basic_buttons or self.basic_buttons
+
+        if len(self.basic_buttons) != 2:
             raise InvaildArgumentException(
-                    "There should be 2 elements in basic_buttons."
+                "There should be 2 elements in basic_buttons."
             )
-            self.basic_buttons = basic_buttons
+
         if isinstance(self.basic_buttons[0], Emoji):
             self._left_button = PartialEmoji(
                 name=self.basic_buttons[0].name,
                 animated=self.basic_buttons[0].animated,
                 id=self.basic_buttons[0].id,
             )
-        elif isinstance(self.basic_buttons[0], PartialEmoji):
-            self._left_button = self.basic_buttons[0]
         else:
-            self._left_label = str(self.basic_buttons[0])
+            self._left_button = str(self.basic_buttons[0])
         if isinstance(self.basic_buttons[1], Emoji):
             self._right_button = PartialEmoji(
                 name=self.basic_buttons[1].name,
                 animated=self.basic_buttons[1].animated,
                 id=self.basic_buttons[1].id,
             )
-        elif isinstance(self.basic_buttons[1], PartialEmoji):
-            self._right_button = self.basic_buttons[0]
         else:
-            self._right_label = str(self.basic_buttons[1])
-        if extended_buttons is not None:
-            if not self.use_extend:
-                raise InvaildArgumentException("use_extend should be True.")
+            self._right_button = str(self.basic_buttons[1])
 
-            if len(set(self.extended_buttons)) != 2:
-                raise InvaildArgumentException(
-                    "There should be 2 elements in extended_buttons"
-                )
-            self.extended_buttons = extended_buttons
+        if len(self.extended_buttons) != 2:
+            raise InvaildArgumentException(
+                "There should be 2 elements in extended_buttons"
+            )
 
-            if isinstance(self.extended_buttons[0], Emoji):
-                self._left2_button = PartialEmoji(
-                    name=self.extended_buttons[0].name,
-                    animated=self.extended_buttons[0].animated,
-                    id=self.extended_buttons[0].id,
-                )
-            elif isinstance(self.extended_buttons[0], PartialEmoji):
-                self._left2_button = self.extended_buttons[0]
-            else:
-                self._left2_label = str(self.extended_buttons[0])
-            if isinstance(self.extended_buttons[1], Emoji):
-                self._right2_button = PartialEmoji(
-                    name=self.extended_buttons[1].name,
-                    animated=self.extended_buttons[1].animated,
-                    id=self.extended_buttons[1].id,
-                )
-            elif isinstance(self.extended_buttons[1], PartialEmoji):
-                self._right2_button = self.extended_buttons[0]
-            else:
-                self._right2_label = str(self.extended_buttons[1])
-        if left_button_style == ButtonStyle.URL or right_button_style == ButtonStyle.URL:
+        if isinstance(self.extended_buttons[0], Emoji):
+            self._left2_button = PartialEmoji(
+                name=self.extended_buttons[0].name,
+                animated=self.extended_buttons[0].animated,
+                id=self.extended_buttons[0].id,
+            )
+        else:
+            self._left2_button = str(self.extended_buttons[0])
+
+        if isinstance(self.extended_buttons[1], Emoji):
+            self._right2_button = PartialEmoji(
+                name=self.extended_buttons[1].name,
+                animated=self.extended_buttons[1].animated,
+                id=self.extended_buttons[1].id,
+            )
+        else:
+            self._right2_button = str(self.extended_buttons[1])
+
+        if (
+            left_button_style == ButtonStyle.URL
+            or right_button_style == ButtonStyle.URL
+        ):
             raise TypeError(
                 "Can't use <discord_component.ButtonStyle.URL> type for button style."
             )
@@ -197,6 +190,7 @@ class Paginator:
                 components=(await self.create_button()),
             )
 
+
     async def go_last(self, payload: Context) -> None:
         if self.embeds is not None:
             if self.page != len(self.embeds):
@@ -232,34 +226,58 @@ class Paginator:
 
     async def start(self) -> None:
         if self.contents is None:
-            await self.context.send(
+            message = await self.context.send(
                 embed=self.embeds[self.page - 1],
                 components=(await self.create_button()),
             )
         else:
-            await self.context.send(
+            message = await self.context.send(
                 content=self.contents[self.page - 1],
                 components=(await self.create_button()),
             )
+        def verif(component_ctx):
+            if self.only:
+                return message.id == component_ctx.message.id and self.only.id == component_ctx.user.id
+            else:
+                return message.id == component_ctx.message.id
         while True:
             try:
-                _task = asyncio.ensure_future(self.bot.wait_for("button_click"))
-                done, pending = await asyncio.wait(
-                    [_task], return_when=asyncio.FIRST_COMPLETED, timeout=self.timeout
-                )
-                for i in pending:
-                    i.cancel()
-
-                if len(done) == 0:
-                    raise asyncio.TimeoutError
-
-                payload = done.pop().result()
-                await self.handle_paginaion(payload=payload)
-
+                payload = await self.bot.wait_for("button_click", check=verif, timeout=self.timeout)
+                await self.handle_pagination(payload=payload)
             except asyncio.TimeoutError:
-                pass
+                await self.stop(message=message)
+                return
+        # while True:
+        #     try:
+        #         _task = asyncio.ensure_future(self.bot.wait_for("button_click"))
+        #         done, pending = await asyncio.wait(
+        #             [_task], return_when=asyncio.FIRST_COMPLETED, timeout=self.timeout
+        #         )
+        #         for i in pending:
+        #             i.cancel()
 
-    async def handle_paginaion(self, payload: Context):
+        #         if len(done) == 0:
+        #             raise asyncio.TimeoutError
+
+        #         payload = done.pop().result()
+        #         print(payload)
+        #         await self.handle_pagination(payload=payload)
+
+        #     except asyncio.TimeoutError:
+        #         print("stop")
+        #         await self.stop()
+        #         return
+
+    async def stop(self, message=None, payload=None) -> None:
+        if message:
+            await message.edit(components=[])
+        if payload:
+            await payload.respond(
+                type=InteractionType.UpdateMessage,
+                components=[],
+            )
+
+    async def handle_pagination(self, payload: Context):
         if self.use_extend:
             if payload.component.id == "_extend_left_click":
                 await self.go_first(payload=payload)
@@ -275,7 +293,7 @@ class Paginator:
             elif payload.component.id == "_right_click":
                 await self.go_next(payload=payload)
 
-    async def disable_check(self) -> None:
+    async def disable_check(self, force:bool=False) -> None:
         if self.page == 1 and (len(self.embeds)) == 1:
             right_disable = True
             left_disable = True
@@ -298,35 +316,31 @@ class Paginator:
                 [
                     Button(
                         style=self.left_button_style,
-                        label=self._left2_label,
-                        emoji=self._left2_button,
+                        label=self._left2_button,
                         id="_extend_left_click",
                         disabled=left_disable,
                     ),
                     Button(
                         style=self.left_button_style,
-                        label=self._left_label,
-                        emoji=self._left_button,
+                        label=self._left_button,
                         id="_left_click",
                         disabled=left_disable,
                     ),
                     Button(
                         style=ButtonStyle.gray,
-                        label=f"Page {str(self.page)} / {str(len(self.embeds))}",
+                        label=f"{self.lang_page} {str(self.page)} / {str(len(self.embeds))}",
                         id="_show_page",
                         disabled=True,
                     ),
                     Button(
                         style=self.right_button_style,
-                        label=self._right_label,
-                        emoji=self._right_button,
+                        label=self._right_button,
                         id="_right_click",
                         disabled=right_disable,
                     ),
                     Button(
                         style=self.right_button_style,
-                        label=self._right2_label,
-                        emoji=self._right_button,
+                        label=self._right2_button,
                         id="_extend_right_click",
                         disabled=right_disable,
                     ),
@@ -343,13 +357,13 @@ class Paginator:
                     ),
                     Button(
                         style=ButtonStyle.gray,
-                        label=f"Page {str(self.page)} / {str(len(self.embeds))}",
+                        label=f"{self.lang_page} {str(self.page)} / {str(len(self.embeds))}",
                         id="_show_page",
                         disabled=True,
                     ),
                     Button(
                         style=self.right_button_style,
-                        label=self._right_label,
+                        label=self._right_button,
                         id="_right_click",
                         disabled=right_disable,
                     ),
