@@ -1,6 +1,7 @@
 import discord
-from discord import InvalidArgument, PartialEmoji, Emoji
+from discord import PartialEmoji, Emoji
 from discord.ext import commands
+Context = commands.Context
 
 import asyncio
 from typing import List, Optional, Union
@@ -9,7 +10,6 @@ from discord_components import (
     Button,
     ButtonStyle,
     InteractionType,
-    Context,
 )
 
 from .errors import MissingAttributeException, InvaildArgumentException
@@ -247,26 +247,6 @@ class Paginator:
             except asyncio.TimeoutError:
                 await self.stop(message=message)
                 return
-        # while True:
-        #     try:
-        #         _task = asyncio.ensure_future(self.bot.wait_for("button_click"))
-        #         done, pending = await asyncio.wait(
-        #             [_task], return_when=asyncio.FIRST_COMPLETED, timeout=self.timeout
-        #         )
-        #         for i in pending:
-        #             i.cancel()
-
-        #         if len(done) == 0:
-        #             raise asyncio.TimeoutError
-
-        #         payload = done.pop().result()
-        #         print(payload)
-        #         await self.handle_pagination(payload=payload)
-
-        #     except asyncio.TimeoutError:
-        #         print("stop")
-        #         await self.stop()
-        #         return
 
     async def stop(self, message=None, payload=None) -> None:
         if message:
